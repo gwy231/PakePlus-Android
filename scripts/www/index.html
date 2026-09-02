@@ -1,0 +1,1141 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>多房间水电费记录表</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0;font-family:system-ui, -apple-system, sans-serif}
+html,body{height:100%;background:#0b0b0c;color:#f0f0f0;line-height:1.45}
+body{display:flex;flex-direction:column;padding:12px;overflow:hidden}
+#tabBar{
+  flex-shrink:0;
+  margin-bottom:14px;
+  overflow-x:auto;
+  overflow-y:hidden;
+  display:flex;
+  gap:10px;
+  padding-bottom:6px;
+  white-space:nowrap;
+}
+#tabBar .tab-btn{flex:none;}
+.main-wrap{
+  flex:1;
+  display:flex;
+  flex-direction:column;
+  overflow:hidden;
+  min-height:0;
+}
+.page-header{
+  margin-bottom:10px;
+  display:flex;
+  justify-content:space-between;
+  align-items:flex-start;
+  gap:10px;
+  flex-wrap:wrap;
+}
+.page-header .title-text{
+  flex:1;
+  min-width:180px;
+}
+.page-header h3{
+  margin:0 0 3px 0;
+  font-size:20px;
+}
+.page-header p{
+  margin:0;
+  font-size:13px;
+  color:#aeb3bf;
+}
+.header-btn-group{
+  display:flex;
+  gap:8px;
+  flex-wrap:wrap;
+}
+.header-btn-group button{
+  padding:6px 10px;
+  font-size:13px;
+  white-space:nowrap;
+}
+.table-outer{
+  flex:1 1 auto;
+  display:flex;
+  flex-direction:column;
+  overflow:hidden;
+  margin-bottom:16px;
+  border-radius:10px;
+  border:none;
+  min-height:0;
+  background:#2c2c34;
+}
+.table-scroll-wrap{
+  flex:1;
+  overflow-y:auto;
+  min-height:140px;
+  margin:0;
+  padding:0;
+}
+table{
+  width:100%;
+  border-collapse:collapse;
+  table-layout:fixed;
+  margin:0;
+  padding:0;
+}
+th{
+  position:sticky;
+  top:0;
+  z-index:3;
+  background:#1e1e26;
+  font-weight:500;
+  color:#e2e2e8;
+  padding:8px 4px;
+  text-align:center;
+  font-size:12px;
+  border:1px solid #2c2c34;
+  word-break:break-all;
+}
+thead tr th{
+  border-top:none;
+}
+th:first-child{
+  border-left:none;
+}
+td{
+  background:#14141a;
+  padding:0;
+  text-align:center;
+  font-size:13px;
+  border:1px solid #2c2c34;
+  height:44px;
+  overflow:hidden;
+  word-break:break-all;
+}
+td.cell-click{
+  cursor:pointer;
+}
+.input-static{
+  width:100%;
+  height:44px;
+  background:#0f0f14;
+  color:#ffffff;
+  border:1px solid #272730;
+  border-radius:4px;
+  text-align:center;
+  font-size:13px;
+  padding:0 4px;
+  overflow:hidden;
+  text-overflow:ellipsis;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+}
+.bottom-actions{
+  flex-shrink:0;
+  display:flex;
+  gap:10px;
+  margin:0 0 16px 0;
+  padding-top:4px;
+  padding-bottom:4px;
+}
+.bottom-actions button{
+  flex:1;
+}
+.total{
+  flex-shrink:0;
+  font-size:16px;
+  font-weight:bold;
+  line-height:1.9;
+  padding:18px 16px;
+  background:transparent;
+  border-radius:10px;
+  border:none;
+}
+.btn-row{display:flex;gap:10px;margin-bottom:0;flex-wrap:wrap;align-items:center}
+button{
+  padding:12px 8px;
+  background:#1f1f2a;
+  color:#f4f4f7;
+  border:1px solid #353545;
+  border-radius:10px;
+  font-size:14px;
+  cursor:pointer;
+  transition:transform 0.12s, filter 0.12s;
+  overflow:hidden;
+  -webkit-tap-highlight-color: transparent;
+}
+button:hover{background:#29293a}
+button.btn-press{
+  transform:scale(0.92);
+  filter:brightness(0.55);
+}
+.tab-btn{background:#16161f}
+.tab-btn.active{background:#0f4b8c;border-color:#1962b8}
+.del-room-btn{background:#581717;border-color:#782020}
+.del-room-btn:hover{background:#6b1e1e}
+.del-row-btn{background:#581717;border-color:#782020}
+.del-row-btn:hover{background:#6b1e1e}
+.dropdown-wrap{position:relative;display:inline-block}
+.dropdown-menu{
+  position:absolute;
+  bottom:calc(100% + 6px);
+  right:0;
+  background:#181822;
+  border:1px solid #353544;
+  border-radius:10px;
+  padding:8px;
+  display:flex;
+  flex-direction:column;
+  gap:8px;
+  z-index:100;
+  min-width:180px;
+}
+.dropdown-menu button{
+  width:100%;
+}
+.dropdown-menu.hidden{display:none !important;}
+.radius-toggle-row{
+  display:flex;
+  gap:6px;
+}
+.radius-toggle-row button{
+  flex:1;
+}
+.radius-toggle-row button.active{
+  background:#0f4b8c;
+  border-color:#1962b8;
+}
+.modal-wrap{
+  position:fixed;
+  inset:0;
+  background:rgba(0,0,0,0.82);
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  z-index:9999;
+  backdrop-filter:blur(2px);
+}
+.modal-box{
+  background:#181822;
+  padding:20px;
+  border:1px solid #353544;
+  width:90%;
+  max-width:340px;
+  border-radius:10px;
+}
+.modal-box h4{margin-bottom:14px;font-weight:500}
+.modal-input,textarea.modal-input{
+  background:#0f0f14;
+  border:1px solid #2c2c38;
+  color:#fff;
+  padding:10px;
+  width:100%;
+  margin-bottom:16px;
+  font-size:14px;
+  border-radius:6px;
+  outline:none;
+}
+.modal-input:focus,textarea.modal-input:focus{border-color:#2978d8}
+.modal-desc{font-size:12px;color:#aaaaaf;margin-bottom:8px}
+.modal-btn-group{display:flex;gap:10px}
+.modal-btn-group button{flex:1;padding:10px}
+.hidden{display:none !important;}
+:-webkit-full-screen {
+  background:#0b0b0c;
+}
+:fullscreen {
+  background:#0b0b0c;
+}
+.fullscreen-table-container{
+  width:100vw;
+  height:100vh;
+  background:#0b0b0c;
+  display:flex;
+  flex-direction:column;
+  padding:12px 20px;
+}
+.fullscreen-table-scroll{
+  flex:1;
+  overflow:auto;
+  display:flex;
+  justify-content:center;
+}
+.fullscreen-table-scroll table{
+  width:100%;
+  max-width:92vw;
+  table-layout:fixed;
+}
+body.style-rect button{border-radius:0px !important;}
+body.style-rect .table-outer{border-radius:0px !important;}
+body.style-rect .modal-box{border-radius:0px !important;}
+body.style-rect .dropdown-menu{border-radius:0px !important;}
+body.style-rect .modal-input{border-radius:0px !important;}
+body.style-rect .input-static{border-radius:0px !important;}
+</style>
+</head>
+<body>
+<div id="tabBar"></div>
+<div id="pageContainer" class="main-wrap"></div>
+<div id="fullscreenOnlyWrap" class="hidden"></div>
+<div id="editCellModal" class="modal-wrap hidden">
+  <div class="modal-box">
+    <h4 id="editCellTitle">填写内容</h4>
+    <input id="editCellInput" class="modal-input" placeholder="请输入">
+    <div class="modal-btn-group">
+      <button id="editCellCancel">取消</button>
+      <button id="editCellOk">确定</button>
+    </div>
+  </div>
+</div>
+<div id="nameModal" class="modal-wrap hidden">
+  <div class="modal-box">
+    <h4>录入房间标识</h4>
+    <input id="roomNameInput" class="modal-input" placeholder="例如：301、次卧、商铺">
+    <div class="modal-btn-group">
+      <button id="modalCancel">取消</button>
+      <button id="modalConfirm">确认新增</button>
+    </div>
+  </div>
+</div>
+<div id="searchRoomModal" class="modal-wrap hidden">
+  <div class="modal-box">
+    <h4>查找房间</h4>
+    <input id="searchRoomInput" class="modal-input" placeholder="输入房间名称关键词">
+    <div class="modal-btn-group">
+      <button id="searchRoomCancel">取消</button>
+      <button id="searchRoomOk">查找</button>
+    </div>
+  </div>
+</div>
+<div id="tipModal" class="modal-wrap hidden">
+  <div class="modal-box">
+    <h4 id="tipModalText"></h4>
+    <div class="modal-btn-group">
+      <button id="tipModalOk">确定</button>
+    </div>
+  </div>
+</div>
+<div id="delRoomModal" class="modal-wrap hidden">
+  <div class="modal-box">
+    <h4 id="delRoomModalTitle">确认删除？该房间全部水电记录将永久清除，不可恢复</h4>
+    <div class="modal-btn-group">
+      <button id="delCancel">取消</button>
+      <button id="delConfirm" class="del-room-btn">确认删除</button>
+    </div>
+  </div>
+</div>
+<div id="delRowModal" class="modal-wrap hidden">
+  <div class="modal-box">
+    <h4>确认删除末尾这条记录？删除后数据无法恢复</h4>
+    <div class="modal-btn-group">
+      <button id="delRowCancel">取消</button>
+      <button id="delRowConfirm" class="del-row-btn">确认删除</button>
+    </div>
+  </div>
+</div>
+<div id="priceModal" class="modal-wrap hidden">
+  <div class="modal-box">
+    <h4>配置房间计费单价</h4>
+    <div class="modal-desc">电费单价(元/度)</div>
+    <input id="elecPriceInput" class="modal-input" type="number" step="0.01" placeholder="电费单价">
+    <div class="modal-desc">水费单价(元/吨)</div>
+    <input id="waterPriceInput" class="modal-input" type="number" step="0.01" placeholder="水费单价">
+    <div class="modal-btn-group">
+      <button id="priceCancel">取消</button>
+      <button id="priceConfirm">保存设置</button>
+    </div>
+  </div>
+</div>
+<div id="exportModal" class="modal-wrap hidden">
+  <div class="modal-box">
+    <h4>全部数据备份</h4>
+    <textarea id="exportTextarea" class="modal-input" style="height:220px;"></textarea>
+    <div class="modal-btn-group">
+      <button id="exportClose">关闭</button>
+      <button id="exportCopy">复制</button>
+    </div>
+  </div>
+</div>
+<div id="importModal" class="modal-wrap hidden">
+  <div class="modal-box">
+    <h4>恢复备份数据</h4>
+    <textarea id="importTextarea" class="modal-input" style="height:220px;" placeholder="粘贴之前复制的备份文本"></textarea>
+    <div class="modal-btn-group">
+      <button id="importClose">关闭</button>
+      <button id="importRestore">加载数据</button>
+    </div>
+  </div>
+</div>
+<script>
+const STORAGE_KEY = "multi_room_water_electric";
+const STYLE_KEY = "ui_style_radius";
+let roomList = [];
+let currentRoomIndex = 0;
+let isFullScreenMode = false;
+let editState = {
+  open: false,
+  rowIndex: -1,
+  field: "",
+  prevRowReading: 0
+};
+const editCellModal = document.getElementById("editCellModal");
+const editCellTitle = document.getElementById("editCellTitle");
+const editCellInput = document.getElementById("editCellInput");
+const editCellCancel = document.getElementById("editCellCancel");
+const editCellOk = document.getElementById("editCellOk");
+const searchRoomModal = document.getElementById("searchRoomModal");
+const searchRoomInput = document.getElementById("searchRoomInput");
+const searchRoomCancel = document.getElementById("searchRoomCancel");
+const searchRoomOk = document.getElementById("searchRoomOk");
+const tipModal = document.getElementById("tipModal");
+const tipModalText = document.getElementById("tipModalText");
+const tipModalOk = document.getElementById("tipModalOk");
+function showTip(text){
+  tipModalText.innerText = text;
+  tipModal.classList.remove("hidden");
+}
+tipModalOk.onclick = ()=>{
+  vibrateShort();
+  tipModal.classList.add("hidden");
+};
+function bindButtonPressEffect(btn){
+  if(!btn) return;
+  btn.addEventListener('touchstart',()=>{
+    btn.classList.add('btn-press');
+  },{passive:true});
+  function clearPress(){
+    btn.classList.remove('btn-press');
+  }
+  btn.addEventListener('touchend',clearPress,{passive:true});
+  btn.addEventListener('touchcancel',clearPress,{passive:true});
+  btn.addEventListener('mousedown',()=>btn.classList.add('btn-press'));
+  btn.addEventListener('mouseup',clearPress);
+  btn.addEventListener('mouseleave',clearPress);
+}
+function vibrateShort(){
+  if(window.navigator && navigator.vibrate){
+    navigator.vibrate(30);
+  }
+}
+function loadUIStyle(){
+  const s = localStorage.getItem(STYLE_KEY);
+  if(s==="rect"){
+    document.body.classList.add("style-rect");
+  }else{
+    document.body.classList.remove("style-rect");
+  }
+}
+function setUIStyle(mode){
+  if(mode==="rect"){
+    document.body.classList.add("style-rect");
+    localStorage.setItem(STYLE_KEY,"rect");
+  }else{
+    document.body.classList.remove("style-rect");
+    localStorage.setItem(STYLE_KEY,"round");
+  }
+  render();
+}
+function generateYYMM(){
+  const now = new Date();
+  const currentYear = now.getFullYear();
+  const currentMonth = now.getMonth() + 1;
+  const yy = String(currentYear).slice(-2);
+  const mm = String(currentMonth).padStart(2, '0');
+  return `${yy}${mm}`;
+}
+const nameModal = document.getElementById("nameModal");
+const roomNameInput = document.getElementById("roomNameInput");
+const modalCancel = document.getElementById("modalCancel");
+const modalConfirm = document.getElementById("modalConfirm");
+const delRoomModal = document.getElementById("delRoomModal");
+const delRoomModalTitle = document.getElementById("delRoomModalTitle");
+const delCancel = document.getElementById("delCancel");
+const delConfirm = document.getElementById("delConfirm");
+const delRowModal = document.getElementById("delRowModal");
+const delRowCancel = document.getElementById("delRowCancel");
+const delRowConfirm = document.getElementById("delRowConfirm");
+const priceModal = document.getElementById("priceModal");
+const elecPriceInput = document.getElementById("elecPriceInput");
+const waterPriceInput = document.getElementById("waterPriceInput");
+const priceCancel = document.getElementById("priceCancel");
+const priceConfirm = document.getElementById("priceConfirm");
+const fullscreenOnlyWrap = document.getElementById("fullscreenOnlyWrap");
+const exportModal = document.getElementById("exportModal");
+const exportTextarea = document.getElementById("exportTextarea");
+const exportClose = document.getElementById("exportClose");
+const exportCopy = document.getElementById("exportCopy");
+const importModal = document.getElementById("importModal");
+const importTextarea = document.getElementById("importTextarea");
+const importClose = document.getElementById("importClose");
+const importRestore = document.getElementById("importRestore");
+[modalCancel,modalConfirm,delCancel,delConfirm,delRowCancel,delRowConfirm,priceCancel,priceConfirm,exportClose,exportCopy,importClose,importRestore,editCellCancel,editCellOk,searchRoomCancel,searchRoomOk,tipModalOk].forEach(b=>bindButtonPressEffect(b));
+function openSearchRoom(){
+  vibrateShort();
+  searchRoomInput.value = "";
+  searchRoomModal.classList.remove("hidden");
+  setTimeout(()=>searchRoomInput.focus(),40);
+}
+searchRoomCancel.onclick = ()=>{
+  vibrateShort();
+  searchRoomModal.classList.add("hidden");
+};
+searchRoomOk.onclick = ()=>{
+  vibrateShort();
+  const keyword = searchRoomInput.value.trim().toLowerCase();
+  searchRoomModal.classList.add("hidden");
+  if(!keyword) return;
+  let foundIndex = -1;
+  for(let i=0;i<roomList.length;i++){
+    if(roomList[i].name.toLowerCase().includes(keyword)){
+      foundIndex = i;
+      break;
+    }
+  }
+  if(foundIndex>=0){
+    saveCurrentRoom();
+    currentRoomIndex = foundIndex;
+    render();
+    setTimeout(()=>{
+      const tabBtns = document.querySelectorAll("#tabBar .tab-btn");
+      if(tabBtns[foundIndex]) tabBtns[foundIndex].scrollIntoView({behavior:"smooth",inline:"center"});
+    },50);
+  }else{
+    showTip("无法查找到此房间");
+  }
+};
+editCellCancel.onclick = ()=>{
+  vibrateShort();
+  editCellModal.classList.add("hidden");
+  editState.open = false;
+};
+editCellOk.onclick = ()=>{
+  vibrateShort();
+  const rawVal = editCellInput.value.trim();
+  const currRoom = roomList[currentRoomIndex];
+  const idx = editState.rowIndex;
+  const field = editState.field;
+  if(field === "m"){
+    currRoom.rows[idx][field] = rawVal;
+    editCellModal.classList.add("hidden");
+    editState.open = false;
+    saveToLocal();
+    render();
+    return;
+  }
+  const val = parseFloat(rawVal);
+  const prevVal = editState.prevRowReading;
+  if(isNaN(val)){
+    editCellModal.classList.add("hidden");
+    editState.open = false;
+    return;
+  }
+  if(idx > 0){
+    if(val < prevVal){
+      showTip(`填写读数 ${val} 不能小于上一行读数 ${prevVal}`);
+      return;
+    }
+  }
+  currRoom.rows[idx][field] = val;
+  editCellModal.classList.add("hidden");
+  editState.open = false;
+  saveToLocal();
+  render();
+};
+function openCellEdit(rowIndex, field){
+  vibrateShort();
+  const currRoom = roomList[currentRoomIndex];
+  editState.rowIndex = rowIndex;
+  editState.field = field;
+  editState.prevRowReading = 0;
+  if(rowIndex > 0 && (field === "e" || field === "w")){
+    const prevRow = currRoom.rows[rowIndex - 1];
+    editState.prevRowReading = Number(prevRow[field] || 0);
+  }
+  if(field === "m"){
+    editCellTitle.innerText = "修改记录月份";
+    editCellInput.value = currRoom.rows[rowIndex].m ?? "";
+  }else if(field === "e"){
+    editCellTitle.innerText = "填写电表读数";
+    editCellInput.value = currRoom.rows[rowIndex].e ?? "";
+  }else{
+    editCellTitle.innerText = "填写水表读数";
+    editCellInput.value = currRoom.rows[rowIndex].w ?? "";
+  }
+  editCellModal.classList.remove("hidden");
+  editState.open = true;
+  setTimeout(()=>{editCellInput.focus();},40);
+}
+function toggleFullScreen(){
+  vibrateShort();
+  saveCurrentRoom();
+  const curr = roomList[currentRoomIndex];
+  let rowsHtml = '';
+  curr.rows.forEach(r=>{
+    rowsHtml += `
+    <tr>
+      <td><div class="input-static">${escapeHtml(r.m||'')}</div></td>
+      <td><div class="input-static">${escapeHtml(r.e||'')}</div></td>
+      <td><div class="input-static">${escapeHtml(r.w||'')}</div></td>
+      <td class="used_e">0</td>
+      <td class="used_w">0</td>
+      <td class="fee_e">0.00</td>
+      <td class="fee_w">0.00</td>
+      <td class="sum">0.00</td>
+    </tr>`;
+  });
+  fullscreenOnlyWrap.innerHTML = `
+  <div class="fullscreen-table-container">
+    <div class="fullscreen-table-scroll">
+      <table>
+        <colgroup>
+          <col><col><col><col><col><col><col><col>
+        </colgroup>
+        <thead>
+          <tr>
+            <th>记录月份</th>
+            <th>电表读数</th>
+            <th>水表读数</th>
+            <th>用电量<br>(度)</th>
+            <th>用水量<br>(吨)</th>
+            <th>电费<br>(元)</th>
+            <th>水费<br>(元)</th>
+            <th>月度总费用<br>(元)</th>
+          </tr>
+        </thead>
+        <tbody class="tb-full-body">${rowsHtml}</tbody>
+      </table>
+    </div>
+  </div>`;
+  fullscreenOnlyWrap.classList.remove("hidden");
+  isFullScreenMode = true;
+  recalcFullscreenTable();
+  fullscreenOnlyWrap.requestFullscreen().catch(err=>{
+    showTip("浏览器不支持全屏:"+err.message);
+    fullscreenOnlyWrap.classList.add("hidden");
+    isFullScreenMode = false;
+  });
+}
+function recalcFullscreenTable(){
+  const currRoom = roomList[currentRoomIndex];
+  const Pe = currRoom.PRICE_E;
+  const Pw = currRoom.PRICE_W;
+  const tb = fullscreenOnlyWrap.querySelector('.tb-full-body');
+  if(!tb) return;
+  const rowsDom = Array.from(tb.querySelectorAll('tr'));
+  if(rowsDom.length===0) return;
+  const firstTr = rowsDom[0];
+  let prevE = Number(currRoom.rows[0].e||0);
+  let prevW = Number(currRoom.rows[0].w||0);
+  firstTr.querySelector('.used_e').innerText = '-';
+  firstTr.querySelector('.used_w').innerText = '-';
+  firstTr.querySelector('.fee_e').innerText = '-';
+  firstTr.querySelector('.fee_w').innerText = '-';
+  firstTr.querySelector('.sum').innerText = '-';
+  for(let i=1;i<rowsDom.length;i++){
+    const eVal = Number(currRoom.rows[i].e||0);
+    const wVal = Number(currRoom.rows[i].w||0);
+    const useE = Math.max(0, eVal - prevE);
+    const useW = Math.max(0, wVal - prevW);
+    const fe = useE * Pe;
+    const fw = useW * Pw;
+    const s = fe + fw;
+    const tr = rowsDom[i];
+    tr.querySelector('.used_e').innerText = useE;
+    tr.querySelector('.used_w').innerText = useW;
+    tr.querySelector('.fee_e').innerText = fe.toFixed(2);
+    tr.querySelector('.fee_w').innerText = fw.toFixed(2);
+    tr.querySelector('.sum').innerText = s.toFixed(2);
+    prevE = eVal;
+    prevW = wVal;
+  }
+}
+document.addEventListener('fullscreenchange',()=>{
+  if(!document.fullscreenElement && isFullScreenMode){
+    fullscreenOnlyWrap.classList.add("hidden");
+    isFullScreenMode = false;
+    render();
+  }
+});
+function doExport(){
+  vibrateShort();
+  const data = {roomList, currentRoomIndex};
+  const jsonStr = JSON.stringify(data,null,2);
+  exportTextarea.value = jsonStr;
+  exportModal.classList.remove("hidden");
+  setTimeout(()=>{
+    exportTextarea.focus();
+    exportTextarea.select();
+  },50);
+}
+exportClose.onclick = ()=>{
+  vibrateShort();
+  exportModal.classList.add("hidden");
+};
+exportCopy.onclick = async ()=>{
+  vibrateShort();
+  try{
+    await navigator.clipboard.writeText(exportTextarea.value);
+    showTip("✅已复制，请粘贴保存到备忘录");
+  }catch(err){
+    showTip("复制失败，请手动全选复制框内文字");
+  }
+};
+function doImport(){
+  vibrateShort();
+  importTextarea.value = "";
+  importModal.classList.remove("hidden");
+}
+importClose.onclick = ()=>{
+  vibrateShort();
+  importModal.classList.add("hidden");
+};
+importRestore.onclick = ()=>{
+  vibrateShort();
+  const text = importTextarea.value.trim();
+  if(!text){showTip("请粘贴备份内容");return;}
+  try{
+    const obj = JSON.parse(text);
+    if(obj.roomList && Array.isArray(obj.roomList)){
+      roomList = obj.roomList;
+      currentRoomIndex = obj.currentRoomIndex||0;
+      roomList.forEach(r=>{
+        if(r.PRICE_E===undefined) r.PRICE_E=1.5;
+        if(r.PRICE_W===undefined) r.PRICE_W=10;
+      });
+      if(currentRoomIndex >= roomList.length) currentRoomIndex = Math.max(0,roomList.length-1);
+      saveToLocal();
+      importModal.classList.add("hidden");
+      render();
+      showTip("✅导入备份成功");
+    }else{
+      showTip("备份文本格式错误");
+    }
+  }catch(err){
+    showTip("解析失败，不是有效备份");
+  }
+};
+function doAddRoom(){
+  vibrateShort();
+  saveCurrentRoom();
+  roomNameInput.value = "";
+  nameModal.classList.remove("hidden");
+}
+function doOpenPrice(){
+  vibrateShort();
+  const curr = roomList[currentRoomIndex];
+  elecPriceInput.value = curr.PRICE_E;
+  waterPriceInput.value = curr.PRICE_W;
+  priceModal.classList.remove("hidden");
+}
+function doOpenDelRoom(){
+  vibrateShort();
+  delRoomModal.classList.remove("hidden");
+}
+delCancel.onclick = ()=>{
+  vibrateShort();
+  delRoomModal.classList.add("hidden");
+};
+delConfirm.onclick = ()=>{
+  vibrateShort();
+  delRoomModal.classList.add("hidden");
+  roomList.splice(currentRoomIndex,1);
+  if(currentRoomIndex >= roomList.length){
+    currentRoomIndex = Math.max(0, roomList.length - 1);
+  }
+  saveToLocal();
+  render();
+};
+delRowCancel.onclick = ()=>{
+  vibrateShort();
+  delRowModal.classList.add("hidden");
+};
+delRowConfirm.onclick = ()=>{
+  vibrateShort();
+  delRowModal.classList.add("hidden");
+  const curr = roomList[currentRoomIndex];
+  if(curr.rows.length>1){
+    curr.rows.pop();
+    saveToLocal();
+    render();
+  }
+};
+priceCancel.onclick = ()=>{
+  vibrateShort();
+  priceModal.classList.add("hidden");
+}
+priceConfirm.onclick = ()=>{
+  vibrateShort();
+  const e = parseFloat(elecPriceInput.value);
+  const w = parseFloat(waterPriceInput.value);
+  priceModal.classList.add("hidden");
+  const curr = roomList[currentRoomIndex];
+  if(!isNaN(e) && e>0) curr.PRICE_E = e;
+  if(!isNaN(w) && w>0) curr.PRICE_W = w;
+  saveToLocal();
+  render();
+}
+function exportCurrentRoomCSV(){
+  vibrateShort();
+  const curr = roomList[currentRoomIndex];
+  if(!curr || curr.rows.length === 0){
+    showTip("当前房间暂无数据可导出");
+    return;
+  }
+  let csvContent = [];
+  csvContent.push(["记录月份", "电表读数", "水表读数", "用电量(度)", "用水量(吨)", "电费(元)", "水费(元)", "月度总费用(元)"]);
+  let prevE = Number(curr.rows[0].e || 0);
+  let prevW = Number(curr.rows[0].w || 0);
+  csvContent.push([
+    curr.rows[0].m || "",
+    curr.rows[0].e || "",
+    curr.rows[0].w || "",
+    "—", "—", "—", "—", "—"
+  ]);
+  for(let i=1;i<curr.rows.length;i++){
+    const row = curr.rows[i];
+    const eVal = Number(row.e || 0);
+    const wVal = Number(row.w || 0);
+    const useE = Math.max(0, eVal - prevE);
+    const useW = Math.max(0, wVal - prevW);
+    const fe = useE * curr.PRICE_E;
+    const fw = useW * curr.PRICE_W;
+    const sum = fe + fw;
+    csvContent.push([
+      row.m || "",
+      row.e || "",
+      row.w || "",
+      useE,
+      useW,
+      fe.toFixed(2),
+      fw.toFixed(2),
+      sum.toFixed(2)
+    ]);
+    prevE = eVal;
+    prevW = wVal;
+  }
+  const csvString = csvContent.map(row=>{
+    return row.map(cell=>{
+      const s = String(cell ?? "");
+      if(s.includes('"') || s.includes(',')){
+        return `"${s.replace(/"/g,'""')}"`;
+      }
+      return s;
+    }).join(',');
+  }).join('\n');
+  const blob = new Blob(['\uFEFF' + csvString], {type:'text/csv;charset=utf-8'});
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = `${curr.name}_水电费记录表.csv`;
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+  showTip("✅表格文件已下载，WPS打开后设置【自动调整列宽】");
+}
+function buildRoomPage(roomData){
+  let rowsHtml = '';
+  roomData.rows.forEach((r,idx)=>{
+    rowsHtml += `
+    <tr>
+      <td class="cell-click" data-row="${idx}" data-field="m"><div class="input-static">${escapeHtml(r.m||'')}</div></td>
+      <td class="cell-click" data-row="${idx}" data-field="e"><div class="input-static">${escapeHtml(r.e||'')}</div></td>
+      <td class="cell-click" data-row="${idx}" data-field="w"><div class="input-static">${escapeHtml(r.w||'')}</div></td>
+      <td class="used_e">0</td>
+      <td class="used_w">0</td>
+      <td class="fee_e">0.00</td>
+      <td class="fee_w">0.00</td>
+      <td class="sum">0.00</td>
+    </tr>
+    `;
+  })
+  const isRect = document.body.classList.contains("style-rect");
+  let html = `
+  <div class="page-header">
+    <div class="title-text">
+      <h3>${escapeHtml(roomData.name)}</h3>
+      <p>计费单价：电费${roomData.PRICE_E.toFixed(2)}元/度，水费${roomData.PRICE_W.toFixed(2)}元/吨</p>
+    </div>
+    <div class="header-btn-group">
+      <button class="search-room-header-btn">查找房间</button>
+      <button class="fullscreen-btn">全屏视图</button>
+    </div>
+  </div>
+  <div class="table-outer">
+    <div class="table-scroll-wrap">
+      <table>
+        <colgroup>
+          <col><col><col><col><col><col><col><col>
+        </colgroup>
+        <thead>
+          <tr>
+            <th>记录月份</th>
+            <th>电表读数</th>
+            <th>水表读数</th>
+            <th>用电量<br>(度)</th>
+            <th>用水量<br>(吨)</th>
+            <th>电费<br>(元)</th>
+            <th>水费<br>(元)</th>
+            <th>月度总费用<br>(元)</th>
+          </tr>
+        </thead>
+        <tbody class="tb-body">${rowsHtml}</tbody>
+      </table>
+    </div>
+  </div>
+  <div class="bottom-actions btn-row">
+    <button class="addRowLocal">添加记录行</button>
+    <button class="delRowLocal">删除末行记录</button>
+    <div class="dropdown-wrap">
+      <button class="dropdown-toggle">功能菜单</button>
+      <div class="dropdown-menu hidden">
+        <button class="menu-add-room">新增房间</button>
+        <button class="menu-set-price">设置本房间计费单价</button>
+        <button class="menu-del-room del-room-btn">删除当前房间</button>
+        <div class="radius-toggle-row">
+          <button class="btn-round ${!isRect?'active':''}">界面样式：圆角</button>
+          <button class="btn-rect ${isRect?'active':''}">界面样式：直角</button>
+        </div>
+        <button class="menu-export">全部数据备份</button>
+        <button class="menu-import">恢复备份数据</button>
+      </div>
+    </div>
+  </div>
+  <div class="total">
+累计电费：<span class="all_e">0.00</span> 元 累计水费：<span class="all_w">0.00</span> 元<br>
+累计总费用：<span class="all_sum">0.00</span> 元
+  </div>
+  `;
+  return html;
+}
+function getNewRowHtml(){
+  const newYYMM = generateYYMM();
+  return `
+    <tr>
+      <td class="cell-click" data-row="" data-field="m"><div class="input-static">${newYYMM}</div></td>
+      <td class="cell-click" data-row="" data-field="e"><div class="input-static"></div></td>
+      <td class="cell-click" data-row="" data-field="w"><div class="input-static"></div></td>
+      <td class="used_e">0</td>
+      <td class="used_w">0</td>
+      <td class="fee_e">0.00</td>
+      <td class="fee_w">0.00</td>
+      <td class="sum">0.00</td>
+    </tr>`;
+}
+function escapeHtml(str){
+  if(!str)return"";
+  return String(str).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace( />/g,'&gt;').replace(/"/g,'&quot;');
+}
+function render(needScrollToBottom=false){
+  const tabBar = document.getElementById('tabBar');
+  const container = document.getElementById('pageContainer');
+  tabBar.innerHTML = '';
+  roomList.forEach((rm,idx)=>{
+    const btn = document.createElement('button');
+    btn.className = 'tab-btn' + (idx===currentRoomIndex?' active':'');
+    btn.innerText = rm.name;
+    bindButtonPressEffect(btn);
+    btn.onclick = ()=>{
+      vibrateShort();
+      saveCurrentRoom();
+      currentRoomIndex = idx;
+      render();
+    }
+    tabBar.appendChild(btn);
+  })
+  if(roomList.length===0){
+    container.innerHTML = "<div style='padding:20px;color:#aaa'>请点击【功能菜单】→新增房间来创建记录页面</div>";
+    return;
+  }
+  const curr = roomList[currentRoomIndex];
+  container.innerHTML = buildRoomPage(curr);
+  bindPageEvents();
+  recalcCurrentPage();
+  if(needScrollToBottom){
+    setTimeout(()=>{
+      const scrollWrap = container.querySelector('.table-scroll-wrap');
+      if(scrollWrap){
+        scrollWrap.scrollTop = scrollWrap.scrollHeight;
+      }
+    },30);
+  }
+}
+function bindPageEvents(){
+  const container = document.getElementById('pageContainer');
+  const addRowBtn = container.querySelector('.addRowLocal');
+  const delRowBtn = container.querySelector('.delRowLocal');
+  const tb = container.querySelector('.tb-body');
+  const fsBtn = container.querySelector('.fullscreen-btn');
+  const searchHeaderBtn = container.querySelector('.search-room-header-btn');
+  bindButtonPressEffect(fsBtn);
+  bindButtonPressEffect(searchHeaderBtn);
+  bindButtonPressEffect(addRowBtn);
+  bindButtonPressEffect(delRowBtn);
+  fsBtn.onclick = toggleFullScreen;
+  searchHeaderBtn.onclick = openSearchRoom;
+  const toggleBtn = container.querySelector('.dropdown-toggle');
+  bindButtonPressEffect(toggleBtn);
+  const menuDom = container.querySelector('.dropdown-menu');
+  const menuAddRoom = container.querySelector('.menu-add-room');
+  const menuSetPrice = container.querySelector('.menu-set-price');
+  const menuDelRoom = container.querySelector('.menu-del-room');
+  const menuExport = container.querySelector('.menu-export');
+  const menuImport = container.querySelector('.menu-import');
+  const btnRound = container.querySelector('.btn-round');
+  const btnRect = container.querySelector('.btn-rect');
+  [menuAddRoom,menuSetPrice,menuDelRoom,menuExport,menuImport,btnRound,btnRect].forEach(b=>bindButtonPressEffect(b));
+  toggleBtn.onclick = ()=>{
+    vibrateShort();
+    menuDom.classList.toggle('hidden');
+  }
+  menuAddRoom.onclick = ()=>{
+    vibrateShort();
+    menuDom.classList.add('hidden');
+    doAddRoom();
+  }
+  menuSetPrice.onclick = ()=>{
+    vibrateShort();
+    menuDom.classList.add('hidden');
+    doOpenPrice();
+  }
+  menuDelRoom.onclick = ()=>{
+    vibrateShort();
+    menuDom.classList.add('hidden');
+    doOpenDelRoom();
+  }
+  menuExport.onclick = ()=>{
+    vibrateShort();
+    menuDom.classList.add('hidden');
+    doExport();
+  }
+  menuImport.onclick = ()=>{
+    vibrateShort();
+    menuDom.classList.add('hidden');
+    doImport();
+  }
+  btnRound.onclick = ()=>{
+    vibrateShort();
+    menuDom.classList.add('hidden');
+    setUIStyle("round");
+  }
+  btnRect.onclick = ()=>{
+    vibrateShort();
+    menuDom.classList.add('hidden');
+    setUIStyle("rect");
+  }
+  addRowBtn.onclick = ()=>{
+    vibrateShort();
+    const curr = roomList[currentRoomIndex];
+    curr.rows.push({m:generateYYMM(),e:"",w:""});
+    saveToLocal();
+    render(true);
+  }
+  delRowBtn.onclick = ()=>{
+    vibrateShort();
+    const curr = roomList[currentRoomIndex];
+    if(curr.rows.length>1){
+      delRowModal.classList.remove("hidden");
+    }
+  }
+  tb.querySelectorAll(".cell-click").forEach(cell=>{
+    cell.onclick = ()=>{
+      const r = Number(cell.dataset.row);
+      const f = cell.dataset.field;
+      openCellEdit(r,f);
+    }
+  })
+}
+function saveCurrentRoom(){
+}
+function recalcCurrentPage(){
+  const currRoom = roomList[currentRoomIndex];
+  const Pe = currRoom.PRICE_E;
+  const Pw = currRoom.PRICE_W;
+  const container = document.getElementById('pageContainer');
+  const tb = container.querySelector('.tb-body');
+  if(!tb) return;
+  const rowsDom = Array.from(tb.querySelectorAll('tr'));
+  if(rowsDom.length===0) return;
+  const firstTr = rowsDom[0];
+  let prevE = Number(currRoom.rows[0].e||0);
+  let prevW = Number(currRoom.rows[0].w||0);
+  let totalE=0, totalW=0;
+  firstTr.querySelector('.used_e').innerText = '-';
+  firstTr.querySelector('.used_w').innerText = '-';
+  firstTr.querySelector('.fee_e').innerText = '-';
+  firstTr.querySelector('.fee_w').innerText = '-';
+  firstTr.querySelector('.sum').innerText = '-';
+  for(let i=1;i<rowsDom.length;i++){
+    const eVal = Number(currRoom.rows[i].e||0);
+    const wVal = Number(currRoom.rows[i].w||0);
+    const useE = Math.max(0, eVal - prevE);
+    const useW = Math.max(0, wVal - prevW);
+    const fe = useE * Pe;
+    const fw = useW * Pw;
+    const s = fe + fw;
+    const tr = rowsDom[i];
+    tr.querySelector('.used_e').innerText = useE;
+    tr.querySelector('.used_w').innerText = useW;
+    tr.querySelector('.fee_e').innerText = fe.toFixed(2);
+    tr.querySelector('.fee_w').innerText = fw.toFixed(2);
+    tr.querySelector('.sum').innerText = s.toFixed(2);
+    prevE = eVal;
+    prevW = wVal;
+    totalE += fe;
+    totalW += fw;
+  }
+  container.querySelector('.all_e').innerText = totalE.toFixed(2);
+  container.querySelector('.all_w').innerText = totalW.toFixed(2);
+  container.querySelector('.all_sum').innerText = (totalE+totalW).toFixed(2);
+}
+function saveToLocal(){
+  const data = {roomList, currentRoomIndex};
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+}
+function loadFromLocal(){
+  const json = localStorage.getItem(STORAGE_KEY);
+  if(!json) return;
+  const obj = JSON.parse(json);
+  roomList = obj.roomList||[];
+  currentRoomIndex = obj.currentRoomIndex||0;
+}
+modalCancel.onclick = ()=>{
+  vibrateShort();
+  nameModal.classList.add("hidden");
+}
+modalConfirm.onclick = ()=>{
+  vibrateShort();
+  const name = roomNameInput.value.trim();
+  nameModal.classList.add("hidden");
+  if(!name) return;
+  const newRoom = {
+    name: name,
+    PRICE_E:1.5,
+    PRICE_W:10,
+    rows:[{m:"",e:"",w:""},{m:"",e:"",w:""},{m:"",e:"",w:""},{m:"",e:"",w:""},{m:"",e:"",w:""}]
+  }
+  roomList.push(newRoom);
+  currentRoomIndex = roomList.length-1;
+  saveToLocal();
+  render();
+}
+loadUIStyle();
+loadFromLocal();
+roomList.forEach((r,idx)=>{
+  if(r.PRICE_E===undefined) r.PRICE_E=1.5;
+  if(r.PRICE_W===undefined) r.PRICE_W=10;
+})
+if(roomList.length===0){
+  roomList.push({
+    name:"房间1",
+    PRICE_E:1.5,
+    PRICE_W:10,
+    rows:[{m:"",e:"",w:""},{m:"",e:"",w:""},{m:"",e:"",w:""},{m:"",e:"",w:""},{m:"",e:"",w:""}]
+  })
+  currentRoomIndex=0;
+  saveToLocal();
+}
+render();
+</script>
+</body>
+</html>
